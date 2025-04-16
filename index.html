@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WhatsApp to Telegram Forwarder</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="manifest" href="manifest.json" />
+  </head>
+  <body>
+    <div class="container">
+      <h1>WhatsApp to Telegram Forwarder</h1>
+
+      <div class="setup-section">
+        <h2>Telegram Configuration</h2>
+        <div class="input-group">
+          <label for="botToken">Telegram Bot Token:</label>
+          <input
+            type="text"
+            id="botToken"
+            placeholder="123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11"
+          />
+        </div>
+        <div class="input-group">
+          <label for="chatId">Telegram Chat ID:</label>
+          <input type="text" id="chatId" placeholder="-1001234567890" />
+        </div>
+        <button id="saveConfig">Save Configuration</button>
+      </div>
+
+      <div class="status-section">
+        <h2>App Status</h2>
+        <p>
+          Notification Access:
+          <span id="notificationAccessStatus">Not Granted</span>
+        </p>
+        <button id="requestPermission">Grant Notification Access</button>
+        <p id="lastForwarded"></p>
+      </div>
+
+      <div class="instructions">
+        <h2>Setup Instructions</h2>
+        <ol>
+          <li>Save your Telegram bot token and chat ID</li>
+          <li>Click "Grant Notification Access"</li>
+          <li>
+            Go to Android Settings > Apps > Special app access > Notification
+            access
+          </li>
+          <li>Enable access for this app</li>
+        </ol>
+      </div>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
