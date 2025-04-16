@@ -1,14 +1,21 @@
+// WhatsApp Business to Telegram Forwarder - Final Version
 // Configuration
 let config = {
   botToken: localStorage.getItem("botToken") || "",
   chatId: localStorage.getItem("chatId") || "",
 };
 
+// Message tracking
+let lastForwardedNumber = null;
+let lastForwardedTime = 0;
+
 // DOM Elements
 const botTokenInput = document.getElementById("botToken");
 const chatIdInput = document.getElementById("chatId");
 const saveConfigBtn = document.getElementById("saveConfig");
 const requestPermissionBtn = document.getElementById("requestPermission");
+const testBotBtn = document.getElementById("testBot");
+const testNotificationBtn = document.getElementById("testNotification");
 const notificationAccessStatus = document.getElementById(
   "notificationAccessStatus"
 );
@@ -21,6 +28,14 @@ function initUI() {
 
   // Check notification access
   checkNotificationAccess();
+
+  // Setup test buttons
+  if (testNotificationBtn) {
+    testNotificationBtn.addEventListener("click", sendTestNotification);
+  }
+  if (testBotBtn) {
+    testBotBtn.addEventListener("click", testTelegramBot);
+  }
 }
 
 // Save configuration
@@ -53,16 +68,27 @@ requestPermissionBtn.addEventListener("click", () => {
 // Check notification access status
 function checkNotificationAccess() {
   // This is a placeholder - actual notification access check requires Android-specific API
-  // In a real app, you would check if the user has granted notification access in system settings
   notificationAccessStatus.textContent = "Check Android Settings";
   notificationAccessStatus.className = "";
 }
 
-// Forward message to Telegram
+// Forward message to Telegram with duplicate prevention
 async function forwardToTelegram(message) {
   if (!config.botToken || !config.chatId) {
     console.error("Telegram bot token or chat ID not configured");
-    return;
+    return false;
+  }
+
+  // Create message fingerprint for duplicate detection
+  const messageFingerprint = message.replace(/\d+/g, "X"); // Replace numbers for comparison
+
+  // Prevent duplicate messages within 5 minutes
+  if (
+    messageFingerprint === lastForwardedNumber &&
+    Date.now() - lastForwardedTime < 300000
+  ) {
+    console.log("Duplicate message prevented:", message);
+    return false;
   }
 
   try {
@@ -73,13 +99,16 @@ async function forwardToTelegram(message) {
       body: JSON.stringify({
         chat_id: config.chatId,
         text: message,
+        disable_notification: false,
       }),
     });
 
     const data = await response.json();
     if (data.ok) {
       const now = new Date();
-      lastForwarded.textContent = `Last forwarded at ${now.toLocaleTimeString()}`;
+      lastForwarded.textContent = `Last forwarded: ${now.toLocaleTimeString()}`;
+      lastForwardedNumber = messageFingerprint;
+      lastForwardedTime = Date.now();
       return true;
     } else {
       console.error("Telegram API error:", data);
@@ -91,36 +120,23 @@ async function forwardToTelegram(message) {
   }
 }
 
-// Simulate notification handling (in a real app, this would be handled by the Notification Listener Service)
-function simulateNotificationHandling() {
-  // This is just for demonstration - in a real app, you would receive actual notifications
-  setInterval(() => {
-    const mockNotification = {
-      title: "WhatsApp Business",
-      body: "New message from +1234567890: Hello!",
-      data: {
-        app: "whatsapp_business",
-        isNewCustomer: Math.random() > 0.7, // 30% chance of being a new customer
-      },
-    };
-
-    handleNotification(mockNotification);
-  }, 30000); // Check every 30 seconds
-}
-
 // Handle incoming notification
 function handleNotification(notification) {
   if (notification.data && notification.data.app === "whatsapp_business") {
     const message = notification.body || "";
 
-    // Simple detection of new customers (in a real app, you'd need more sophisticated logic)
+    // Improved detection of new customers
     if (
       message.includes("New message from") ||
+      message.includes("new chat") ||
       notification.data.isNewCustomer
     ) {
       const phoneNumber = extractPhoneNumber(message);
       if (phoneNumber) {
-        forwardToTelegram(`New WhatsApp customer: ${phoneNumber}`);
+        const now = new Date();
+        const formattedMessage = phoneNumber;
+
+        forwardToTelegram(formattedMessage);
       }
     }
   }
@@ -128,9 +144,49 @@ function handleNotification(notification) {
 
 // Extract phone number from message
 function extractPhoneNumber(message) {
-  const phoneRegex = /(\+?\d{10,15})/;
+  // Improved phone number regex
+  const phoneRegex = /(\+?[\d\s\-\(\)]{8,15}\d)/;
   const match = message.match(phoneRegex);
-  return match ? match[0] : null;
+  return match ? match[0].replace(/\D/g, "") : null;
+}
+
+// Test Telegram Bot connection
+async function testTelegramBot() {
+  if (!config.botToken || !config.chatId) {
+    alert("Please save your Telegram bot token and chat ID first!");
+    return;
+  }
+
+  try {
+    const testMessage =
+      `✅ WhatsApp-to-Telegram Forwarder Test\n` +
+      `Bot is working correctly!\n` +
+      `Timestamp: ${new Date().toLocaleString()}`;
+
+    const success = await forwardToTelegram(testMessage);
+    if (success) {
+      alert("Test message sent successfully to Telegram!");
+    } else {
+      alert("Failed to send test message. Check console for errors.");
+    }
+  } catch (error) {
+    console.error("Test failed:", error);
+    alert("Test failed. Check console for errors.");
+  }
+}
+
+// Manual test notification
+function sendTestNotification() {
+  const mockNotification = {
+    title: "WhatsApp Business",
+    body: "New message from +123456789: Hello there!",
+    data: {
+      app: "whatsapp_business",
+      isNewCustomer: true,
+    },
+  };
+  handleNotification(mockNotification);
+  alert("Test notification processed! Check your Telegram group.");
 }
 
 // Register Service Worker
@@ -150,5 +206,4 @@ if ("serviceWorker" in navigator) {
 // Initialize
 document.addEventListener("DOMContentLoaded", () => {
   initUI();
-  simulateNotificationHandling();
 });
