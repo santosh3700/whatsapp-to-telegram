@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WhatsApp Forwarder - Debug Mode</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      .section {
+        margin-bottom: 30px;
+        border: 1px solid #ddd;
+        padding: 15px;
+        border-radius: 5px;
+      }
+      h2 {
+        color: #075e54;
+        margin-top: 0;
+      }
+      textarea {
+        width: 100%;
+        height: 100px;
+        margin-bottom: 10px;
+      }
+      button {
+        background: #075e54;
+        color: white;
+        border: none;
+        padding: 8px 15px;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      #log {
+        background: #f5f5f5;
+        padding: 10px;
+        border-radius: 5px;
+        height: 200px;
+        overflow-y: auto;
+      }
+      .success {
+        color: green;
+      }
+      .error {
+        color: red;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>WhatsApp Forwarder Debug Console</h1>
+
+    <div class="section">
+      <h2>1. Telegram Configuration</h2>
+      <label>Bot Token:</label>
+      <input
+        type="text"
+        id="botToken"
+        placeholder="123456:ABC-DEF1234ghIkl..."
+        style="width: 100%; margin-bottom: 10px"
+      />
+      <label>Chat ID:</label>
+      <input
+        type="text"
+        id="chatId"
+        placeholder="-1001234567890"
+        style="width: 100%; margin-bottom: 10px"
+      />
+      <button id="saveConfig">Save Config</button>
+      <button id="testBot">Test Telegram Connection</button>
+    </div>
+
+    <div class="section">
+      <h2>2. Notification Simulator</h2>
+      <label>Notification Title:</label>
+      <input
+        type="text"
+        id="notifTitle"
+        value="WhatsApp Business"
+        style="width: 100%; margin-bottom: 10px"
+      />
+      <label>Notification Body:</label>
+      <input
+        type="text"
+        id="notifBody"
+        value="New message from +1234567890: Hello!"
+        style="width: 100%; margin-bottom: 10px"
+      />
+      <button id="testNotif">Test Notification</button>
+      <button id="realNotif">Simulate Real WhatsApp Notification</button>
+    </div>
+
+    <div class="section">
+      <h2>3. Debug Console</h2>
+      <div id="log"></div>
+      <button id="clearLog">Clear Log</button>
+    </div>
+
+    <div class="section">
+      <h2>4. Permission Status</h2>
+      <p>
+        Notification Permission: <span id="notifPermStatus">Not checked</span>
+      </p>
+      <button id="checkPerms">Check Permissions</button>
+    </div>
+
+    <script src="script-test.js"></script>
+  </body>
+</html>
