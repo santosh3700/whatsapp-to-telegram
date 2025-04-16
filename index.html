@@ -4,54 +4,101 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>WhatsApp to Telegram Forwarder</title>
+    <meta
+      name="description"
+      content="Forward WhatsApp Business notifications to Telegram"
+    />
     <link rel="stylesheet" href="styles.css" />
     <link rel="manifest" href="manifest.json" />
+    <link rel="icon" href="favicon.ico" />
   </head>
   <body>
     <div class="container">
-      <h1>WhatsApp to Telegram Forwarder</h1>
+      <header>
+        <h1>WhatsApp to Telegram Forwarder</h1>
+        <p class="subtitle">
+          Get WhatsApp Business notifications in your Telegram group
+        </p>
+      </header>
 
       <div class="setup-section">
-        <h2>Telegram Configuration</h2>
+        <h2><span class="icon">⚙️</span> Configuration</h2>
         <div class="input-group">
           <label for="botToken">Telegram Bot Token:</label>
           <input
-            type="text"
+            type="password"
             id="botToken"
             placeholder="123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11"
           />
+          <p class="hint">Get this from @BotFather on Telegram</p>
         </div>
         <div class="input-group">
           <label for="chatId">Telegram Chat ID:</label>
           <input type="text" id="chatId" placeholder="-1001234567890" />
+          <p class="hint">For groups, this usually starts with -100</p>
         </div>
-        <button id="saveConfig">Save Configuration</button>
+        <button id="saveConfig" class="primary-btn">Save Configuration</button>
       </div>
 
       <div class="status-section">
-        <h2>App Status</h2>
-        <p>
-          Notification Access:
-          <span id="notificationAccessStatus">Not Granted</span>
+        <h2><span class="icon">📱</span> App Status</h2>
+        <div class="status-item">
+          <span class="status-label">Notification Access:</span>
+          <span id="notificationAccessStatus" class="status-badge pending"
+            >Not Configured</span
+          >
+        </div>
+        <button id="requestPermission" class="secondary-btn">
+          Enable Notification Access
+        </button>
+
+        <div class="status-item">
+          <span class="status-label">Last Forwarded:</span>
+          <span id="lastForwarded" class="status-value">Never</span>
+        </div>
+      </div>
+
+      <div class="test-section">
+        <h2><span class="icon">🧪</span> Testing</h2>
+        <div class="test-buttons">
+          <button id="testBot" class="test-btn">Test Telegram Bot</button>
+          <button id="testNotification" class="test-btn">
+            Test Notification
+          </button>
+        </div>
+        <p class="hint">
+          Use these to verify your setup before relying on real notifications
         </p>
-        <button id="requestPermission">Grant Notification Access</button>
-        <p id="lastForwarded"></p>
       </div>
 
       <div class="instructions">
-        <h2>Setup Instructions</h2>
+        <h2><span class="icon">📚</span> Setup Guide</h2>
         <ol>
-          <li>Save your Telegram bot token and chat ID</li>
-          <li>Click "Grant Notification Access"</li>
           <li>
-            Go to Android Settings > Apps > Special app access > Notification
-            access
+            Create a Telegram bot with
+            <a href="https://t.me/BotFather" target="_blank">@BotFather</a>
           </li>
-          <li>Enable access for this app</li>
+          <li>Add the bot to your Telegram group as admin</li>
+          <li>Save your bot token and chat ID above</li>
+          <li>Enable notification access in Android settings</li>
+          <li>Test the connection using the buttons above</li>
         </ol>
+
+        <div class="warning">
+          <strong>⚠️ Important:</strong> This app requires Android and WhatsApp
+          Business notifications to be enabled.
+        </div>
       </div>
     </div>
 
+    <footer>
+      <p>WhatsApp to Telegram Forwarder • <span id="year"></span></p>
+    </footer>
+
     <script src="script.js"></script>
+    <script>
+      // Set current year in footer
+      document.getElementById("year").textContent = new Date().getFullYear();
+    </script>
   </body>
 </html>
