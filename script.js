@@ -207,3 +207,35 @@ if ("serviceWorker" in navigator) {
 document.addEventListener("DOMContentLoaded", () => {
   initUI();
 });
+
+if (window.matchMedia("(display-mode: standalone)").matches) {
+  console.log("Running as installed app");
+  // Enable notification reading features
+} else {
+  console.log("Running in browser");
+  // Show install prompt
+}
+
+// Trigger installation prompt
+let deferredPrompt;
+window.addEventListener("beforeinstallprompt", (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  showInstallPromotion();
+});
+
+function showInstallPromotion() {
+  const installBtn = document.createElement("button");
+  installBtn.textContent = "Install App";
+  installBtn.className = "install-btn";
+  installBtn.onclick = () => {
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then((choiceResult) => {
+      if (choiceResult.outcome === "accepted") {
+        console.log("User accepted install");
+      }
+      deferredPrompt = null;
+    });
+  };
+  document.body.appendChild(installBtn);
+}

@@ -8,97 +8,512 @@
       name="description"
       content="Forward WhatsApp Business notifications to Telegram"
     />
-    <link rel="stylesheet" href="styles.css" />
-    <link rel="manifest" href="manifest.json" />
-    <link rel="icon" href="favicon.ico" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="theme-color" content="#075e54" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <link rel="manifest" href="manifest.json" crossorigin="use-credentials" />
+    <style>
+      :root {
+        --primary-color: #075e54;
+        --secondary-color: #128c7e;
+        --error-color: #e74c3c;
+        --success-color: #2ecc71;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        padding: 20px;
+        background-color: #f5f5f5;
+        color: #333;
+        max-width: 800px;
+        margin: 0 auto;
+      }
+
+      header {
+        text-align: center;
+        margin-bottom: 20px;
+      }
+
+      h1 {
+        color: var(--primary-color);
+        margin-bottom: 5px;
+      }
+
+      .subtitle {
+        color: #666;
+        margin-top: 0;
+      }
+
+      .section {
+        background-color: white;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      .input-group {
+        margin-bottom: 15px;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+      }
+
+      input,
+      textarea {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        box-sizing: border-box;
+      }
+
+      button {
+        background-color: var(--primary-color);
+        color: white;
+        border: none;
+        padding: 10px 15px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: background-color 0.3s;
+        margin-right: 10px;
+        margin-bottom: 10px;
+      }
+
+      button:hover {
+        background-color: var(--secondary-color);
+      }
+
+      button.secondary {
+        background-color: #f0f0f0;
+        color: #333;
+      }
+
+      button.test {
+        background-color: #3498db;
+      }
+
+      .status-badge {
+        font-weight: bold;
+        padding: 3px 8px;
+        border-radius: 4px;
+      }
+
+      .pending {
+        background-color: #f39c12;
+        color: white;
+      }
+
+      .granted {
+        background-color: var(--success-color);
+        color: white;
+      }
+
+      .denied {
+        background-color: var(--error-color);
+        color: white;
+      }
+
+      #debugConsole {
+        background-color: #2c3e50;
+        color: #ecf0f1;
+        padding: 15px;
+        border-radius: 8px;
+        height: 200px;
+        overflow-y: auto;
+        font-family: monospace;
+        margin-bottom: 15px;
+      }
+
+      .debug-message {
+        margin-bottom: 5px;
+        line-height: 1.4;
+      }
+
+      .debug-info {
+        color: #3498db;
+      }
+
+      .debug-success {
+        color: var(--success-color);
+      }
+
+      .debug-warning {
+        color: #f39c12;
+      }
+
+      .debug-error {
+        color: var(--error-color);
+      }
+
+      .hidden {
+        display: none;
+      }
+
+      #installButton {
+        background-color: #9b59b6;
+        display: none;
+      }
+
+      .instructions {
+        font-size: 14px;
+        color: #666;
+        margin-top: 10px;
+      }
+    </style>
   </head>
   <body>
-    <div class="container">
-      <header>
-        <h1>WhatsApp to Telegram Forwarder</h1>
-        <p class="subtitle">
-          Get WhatsApp Business notifications in your Telegram group
-        </p>
-      </header>
+    <header>
+      <h1>WhatsApp to Telegram Forwarder</h1>
+      <p class="subtitle">
+        Get WhatsApp Business notifications in your Telegram group
+      </p>
+      <button id="installButton" class="hidden">Install App</button>
+    </header>
 
-      <div class="setup-section">
-        <h2><span class="icon">⚙️</span> Configuration</h2>
-        <div class="input-group">
-          <label for="botToken">Telegram Bot Token:</label>
-          <input
-            type="password"
-            id="botToken"
-            placeholder="123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11"
-          />
-          <p class="hint">Get this from @BotFather on Telegram</p>
-        </div>
-        <div class="input-group">
-          <label for="chatId">Telegram Chat ID:</label>
-          <input type="text" id="chatId" placeholder="-1001234567890" />
-          <p class="hint">For groups, this usually starts with -100</p>
-        </div>
-        <button id="saveConfig" class="primary-btn">Save Configuration</button>
+    <div class="section">
+      <h2>Configuration</h2>
+      <div class="input-group">
+        <label for="botToken">Telegram Bot Token:</label>
+        <input
+          type="password"
+          id="botToken"
+          placeholder="123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11"
+        />
+        <p class="instructions">Get this from @BotFather on Telegram</p>
       </div>
-
-      <div class="status-section">
-        <h2><span class="icon">📱</span> App Status</h2>
-        <div class="status-item">
-          <span class="status-label">Notification Access:</span>
-          <span id="notificationAccessStatus" class="status-badge pending"
-            >Not Configured</span
-          >
-        </div>
-        <button id="requestPermission" class="secondary-btn">
-          Enable Notification Access
-        </button>
-
-        <div class="status-item">
-          <span class="status-label">Last Forwarded:</span>
-          <span id="lastForwarded" class="status-value">Never</span>
-        </div>
+      <div class="input-group">
+        <label for="chatId">Telegram Chat ID:</label>
+        <input type="text" id="chatId" placeholder="-1001234567890" />
+        <p class="instructions">For groups, this usually starts with -100</p>
       </div>
-
-      <div class="test-section">
-        <h2><span class="icon">🧪</span> Testing</h2>
-        <div class="test-buttons">
-          <button id="testBot" class="test-btn">Test Telegram Bot</button>
-          <button id="testNotification" class="test-btn">
-            Test Notification
-          </button>
-        </div>
-        <p class="hint">
-          Use these to verify your setup before relying on real notifications
-        </p>
-      </div>
-
-      <div class="instructions">
-        <h2><span class="icon">📚</span> Setup Guide</h2>
-        <ol>
-          <li>
-            Create a Telegram bot with
-            <a href="https://t.me/BotFather" target="_blank">@BotFather</a>
-          </li>
-          <li>Add the bot to your Telegram group as admin</li>
-          <li>Save your bot token and chat ID above</li>
-          <li>Enable notification access in Android settings</li>
-          <li>Test the connection using the buttons above</li>
-        </ol>
-
-        <div class="warning">
-          <strong>⚠️ Important:</strong> This app requires Android and WhatsApp
-          Business notifications to be enabled.
-        </div>
-      </div>
+      <button id="saveConfig">Save Configuration</button>
     </div>
 
-    <footer>
-      <p>WhatsApp to Telegram Forwarder • <span id="year"></span></p>
-    </footer>
+    <div class="section">
+      <h2>App Status</h2>
+      <div class="input-group">
+        <label>Installation Status:</label>
+        <span id="installStatus" class="status-badge pending"
+          >Not Installed</span
+        >
+      </div>
+      <div class="input-group">
+        <label>Notification Access:</label>
+        <span id="notificationAccessStatus" class="status-badge pending"
+          >Not Granted</span
+        >
+      </div>
+      <div class="input-group">
+        <label>Last Forwarded:</label>
+        <span id="lastForwarded">Never</span>
+      </div>
+      <button id="checkPermissions" class="secondary">Check Permissions</button>
+      <button id="openSettings" class="secondary hidden">
+        Open Notification Settings
+      </button>
+    </div>
 
-    <script src="script.js"></script>
+    <div class="section">
+      <h2>Testing</h2>
+      <button id="testBot" class="test">Test Telegram Bot</button>
+      <button id="testNotification" class="test">Test Notification</button>
+      <p class="instructions">
+        Use these to verify your setup before relying on real notifications
+      </p>
+    </div>
+
+    <div class="section">
+      <h2>Debug Console</h2>
+      <div id="debugConsole"></div>
+      <button id="clearDebug" class="secondary">Clear Console</button>
+      <button id="toggleDebug" class="secondary">Hide Debug</button>
+    </div>
+
     <script>
-      // Set current year in footer
-      document.getElementById("year").textContent = new Date().getFullYear();
+      // Configuration
+      const config = {
+        botToken: localStorage.getItem("botToken") || "",
+        chatId: localStorage.getItem("chatId") || "",
+        debugMode: true,
+      };
+
+      // DOM Elements
+      const botTokenInput = document.getElementById("botToken");
+      const chatIdInput = document.getElementById("chatId");
+      const saveConfigBtn = document.getElementById("saveConfig");
+      const testBotBtn = document.getElementById("testBot");
+      const testNotificationBtn = document.getElementById("testNotification");
+      const checkPermissionsBtn = document.getElementById("checkPermissions");
+      const openSettingsBtn = document.getElementById("openSettings");
+      const installButton = document.getElementById("installButton");
+      const installStatus = document.getElementById("installStatus");
+      const notificationAccessStatus = document.getElementById(
+        "notificationAccessStatus"
+      );
+      const lastForwarded = document.getElementById("lastForwarded");
+      const debugConsole = document.getElementById("debugConsole");
+      const clearDebugBtn = document.getElementById("clearDebug");
+      const toggleDebugBtn = document.getElementById("toggleDebug");
+
+      // Installation handling
+      let deferredPrompt;
+      window.addEventListener("beforeinstallprompt", (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        installButton.classList.remove("hidden");
+        debugLog("Installation available", "info");
+
+        installButton.addEventListener("click", () => {
+          installButton.classList.add("hidden");
+          deferredPrompt.prompt();
+
+          deferredPrompt.userChoice.then((choiceResult) => {
+            if (choiceResult.outcome === "accepted") {
+              debugLog("User accepted installation", "success");
+              checkInstallStatus();
+            } else {
+              debugLog("User dismissed installation", "warning");
+            }
+            deferredPrompt = null;
+          });
+        });
+      });
+
+      // Debug logging
+      function debugLog(message, type = "info") {
+        if (!config.debugMode) return;
+
+        const messageElement = document.createElement("div");
+        messageElement.className = `debug-message debug-${type}`;
+        messageElement.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+        debugConsole.appendChild(messageElement);
+        debugConsole.scrollTop = debugConsole.scrollHeight;
+
+        console.log(`[${type}] ${message}`);
+      }
+
+      // Check installation status
+      function checkInstallStatus() {
+        const isStandalone = window.matchMedia(
+          "(display-mode: standalone)"
+        ).matches;
+        if (isStandalone || window.navigator.standalone) {
+          installStatus.textContent = "Installed";
+          installStatus.className = "status-badge granted";
+          debugLog("Running as installed app", "success");
+          return true;
+        } else {
+          installStatus.textContent = "Not Installed";
+          installStatus.className = "status-badge pending";
+          debugLog("Running in browser mode", "warning");
+          return false;
+        }
+      }
+
+      // Check notification permissions
+      function checkNotificationPermissions() {
+        if (!("Notification" in window)) {
+          notificationAccessStatus.textContent = "Not Supported";
+          notificationAccessStatus.className = "status-badge denied";
+          debugLog("Notifications not supported in this browser", "error");
+          return;
+        }
+
+        Notification.requestPermission().then((permission) => {
+          if (permission === "granted") {
+            notificationAccessStatus.textContent = "Granted";
+            notificationAccessStatus.className = "status-badge granted";
+            openSettingsBtn.classList.remove("hidden");
+            debugLog("Notification permission granted", "success");
+          } else {
+            notificationAccessStatus.textContent = "Denied";
+            notificationAccessStatus.className = "status-badge denied";
+            debugLog("Notification permission denied", "error");
+          }
+        });
+      }
+
+      // Save configuration
+      function saveConfig() {
+        config.botToken = botTokenInput.value.trim();
+        config.chatId = chatIdInput.value.trim();
+
+        localStorage.setItem("botToken", config.botToken);
+        localStorage.setItem("chatId", config.chatId);
+
+        debugLog("Configuration saved", "success");
+        alert("Configuration saved successfully!");
+      }
+
+      // Forward message to Telegram
+      async function forwardToTelegram(message) {
+        if (!config.botToken || !config.chatId) {
+          debugLog("Telegram bot token or chat ID not configured", "error");
+          return false;
+        }
+
+        try {
+          const url = `https://api.telegram.org/bot${config.botToken}/sendMessage`;
+          const response = await fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              chat_id: config.chatId,
+              text: message,
+            }),
+          });
+
+          const data = await response.json();
+          if (data.ok) {
+            const now = new Date();
+            lastForwarded.textContent = now.toLocaleTimeString();
+            debugLog(`Message forwarded to Telegram: ${message}`, "success");
+            return true;
+          } else {
+            debugLog(`Telegram API error: ${data.description}`, "error");
+            return false;
+          }
+        } catch (error) {
+          debugLog(`Error forwarding to Telegram: ${error.message}`, "error");
+          return false;
+        }
+      }
+
+      // Handle incoming notification
+      function handleNotification(notification) {
+        debugLog(
+          `Received notification: ${notification.title} - ${notification.body}`,
+          "info"
+        );
+
+        if (
+          notification.data &&
+          notification.data.app === "whatsapp_business"
+        ) {
+          const message = notification.body || "";
+
+          if (
+            message.includes("New message from") ||
+            notification.data.isNewCustomer
+          ) {
+            const phoneNumber = extractPhoneNumber(message);
+            if (phoneNumber) {
+              const now = new Date();
+              const formattedMessage =
+                `📱 New WhatsApp Customer\n` +
+                `Number: ${phoneNumber}\n` +
+                `Time: ${now.toLocaleString()}`;
+              forwardToTelegram(formattedMessage);
+            }
+          }
+        }
+      }
+
+      // Extract phone number
+      function extractPhoneNumber(message) {
+        const phoneRegex = /(\+?\d[\d\s\-\(\)]{8,}\d)/;
+        const match = message.match(phoneRegex);
+        return match ? match[0].replace(/\D/g, "") : null;
+      }
+
+      // Test Telegram Bot connection
+      async function testTelegramBot() {
+        if (!config.botToken || !config.chatId) {
+          alert("Please save your Telegram bot token and chat ID first!");
+          return;
+        }
+
+        try {
+          const testMessage =
+            `✅ WhatsApp-to-Telegram Forwarder Test\n` +
+            `Bot is working correctly!\n` +
+            `Timestamp: ${new Date().toLocaleString()}`;
+
+          const success = await forwardToTelegram(testMessage);
+          if (success) {
+            alert("Test message sent successfully to Telegram!");
+          } else {
+            alert(
+              "Failed to send test message. Check debug console for errors."
+            );
+          }
+        } catch (error) {
+          debugLog(`Test failed: ${error.message}`, "error");
+          alert("Test failed. Check debug console for errors.");
+        }
+      }
+
+      // Test notification
+      function testNotification() {
+        const testNotif = {
+          title: "WhatsApp Business",
+          body: "New message from +1234567890: Hello, this is a test!",
+          data: {
+            app: "whatsapp_business",
+            isNewCustomer: true,
+          },
+        };
+        handleNotification(testNotif);
+        alert("Test notification processed. Check Telegram group.");
+      }
+
+      // Open Android notification settings
+      function openNotificationSettings() {
+        if (
+          typeof Android !== "undefined" &&
+          Android.openNotificationSettings
+        ) {
+          Android.openNotificationSettings();
+        } else {
+          debugLog(
+            "Could not open notification settings - Android bridge not available",
+            "warning"
+          );
+          alert(
+            "Please go to Android Settings > Apps > Notification access to enable permissions"
+          );
+        }
+      }
+
+      // Initialize
+      function init() {
+        // Load saved config
+        botTokenInput.value = config.botToken;
+        chatIdInput.value = config.chatId;
+
+        // Check installation status
+        checkInstallStatus();
+
+        // Set up event listeners
+        saveConfigBtn.addEventListener("click", saveConfig);
+        testBotBtn.addEventListener("click", testTelegramBot);
+        testNotificationBtn.addEventListener("click", testNotification);
+        checkPermissionsBtn.addEventListener(
+          "click",
+          checkNotificationPermissions
+        );
+        openSettingsBtn.addEventListener("click", openNotificationSettings);
+        clearDebugBtn.addEventListener("click", () => {
+          debugConsole.innerHTML = "";
+        });
+        toggleDebugBtn.addEventListener("click", () => {
+          debugConsole.classList.toggle("hidden");
+          toggleDebugBtn.textContent = debugConsole.classList.contains("hidden")
+            ? "Show Debug"
+            : "Hide Debug";
+        });
+
+        debugLog("App initialized", "success");
+      }
+
+      // Start the app
+      document.addEventListener("DOMContentLoaded", init);
     </script>
   </body>
 </html>
